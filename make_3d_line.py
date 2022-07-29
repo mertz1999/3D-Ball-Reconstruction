@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy
 
 
 
@@ -30,4 +31,22 @@ for i in range(number_of_points):
                                 ), axis=0)
 
 # print(A)
-print(np.array_str(A, precision=1, suppress_small=True))
+# print(np.array_str(A, precision=1, suppress_small=True))
+
+# Mul. of Transpose of A and A Find Projection Matrix with Eigen Vector that have min eigen-value
+A_ = A.T @ A
+eigenvalues, eigenvectors = np.linalg.eig(A_)
+M = eigenvectors[:,np.argmin(eigenvalues)]
+M = M / M[-1]
+M = np.reshape(M, (3,4))
+
+# Finding center of camera
+M_ = M.T @ M 
+eigenvalues, eigenvectors = np.linalg.eig(M_)
+camera_center = eigenvectors[:,np.argmin(eigenvalues)]
+camera_center = camera_center[0:3] / camera_center[-1]
+print("Center of Camera: ", camera_center)
+
+
+ax.scatter3D(camera_center[0],camera_center[1],camera_center[2], cmap='Greens');
+plt.show()

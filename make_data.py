@@ -1,3 +1,4 @@
+from turtle import clear
 import numpy as np 
 
 # File name 
