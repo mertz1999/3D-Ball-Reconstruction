@@ -1,7 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import scipy
-
 
 class Projection():
     """
@@ -72,10 +69,62 @@ class Projection():
         # Line function based on Scale input variable
         line = lambda scale: self.camera_center + scale*(sample_loc-self.camera_center)
 
-        # Secound output is DR
-        return line, sample_loc-self.camera_center
+        """
+        Some tips:
+            1. DR = line(1)-line(0)
+            2. Camera Canter = line(0)
+        """
+        return line
 
 
-# camera_8 = Projection()
-# camera_8.projection_mat('./data/game_8.npy')
-# line, DR = camera_8.calc_line(np.array([779,385, 1]))
+# Nearest point between two line
+def nearest_point(line1, line2):
+    # Calc Camera centers
+    camera_center_1 = line1(0)
+    camera_center_2 = line2(0)
+
+    # Calc DRs and Camera center
+    DR1 = line1(1) - camera_center_1
+    DR2 = line2(1) - camera_center_2
+
+    """
+        dot_DRs * scale_factor = diff        
+    """
+    dot_DRs = np.array([
+        [np.inner(DR1,DR1), np.inner(DR2,DR1)*-1],
+        [np.inner(DR1,DR2), np.inner(DR2,DR2)*-1]
+    ])
+
+    diff = np.array([
+        [np.inner((camera_center_2-camera_center_1), DR1)],
+        [np.inner((camera_center_2-camera_center_1), DR2)],
+    ])
+
+    # Find Scale Factor for each lines
+    A = np.concatenate((dot_DRs, -1*diff), axis=1)
+    A_ = A.T @ A 
+    print(A_)
+    eigenvalues, eigenvectors = np.linalg.eig(A_)
+    scale_factor = eigenvectors[:,np.argmin(eigenvalues)]
+    scale_factor = scale_factor[0:2] / scale_factor[-1]
+    print("scale_factor     : ", scale_factor)
+
+    desired_point_1 = line1(scale_factor[0])
+    desired_point_2 = line2(scale_factor[1])
+
+    return (desired_point_1+desired_point_2)/2
+
+
+
+
+
+camera_8 = Projection()
+camera_8.projection_mat('./data/game_8.npy')
+line1 = camera_8.calc_line(np.array([1022,246, 1]))
+
+
+camera_8_zoomed = Projection()
+camera_8_zoomed.projection_mat('./data/game_8_zoomed.npy')
+line2 = camera_8_zoomed.calc_line(np.array([975,25, 1]))
+
+print(nearest_point(line1,line2))
