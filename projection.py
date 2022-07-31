@@ -64,7 +64,7 @@ class Projection():
         eigenvalues, eigenvectors = np.linalg.eig(M_)
         sample_loc = eigenvectors[:,np.argmin(eigenvalues)]
         sample_loc = sample_loc[0:3] / sample_loc[-1]
-        print("sample_loc       : ", sample_loc)
+        # print("sample_loc       : ", sample_loc)
 
         # Line function based on Scale input variable
         line = lambda scale: self.camera_center + scale*(sample_loc-self.camera_center)
@@ -103,11 +103,10 @@ def nearest_point(line1, line2):
     # Find Scale Factor for each lines
     A = np.concatenate((dot_DRs, -1*diff), axis=1)
     A_ = A.T @ A 
-    print(A_)
     eigenvalues, eigenvectors = np.linalg.eig(A_)
     scale_factor = eigenvectors[:,np.argmin(eigenvalues)]
     scale_factor = scale_factor[0:2] / scale_factor[-1]
-    print("scale_factor     : ", scale_factor)
+    # print("scale_factor     : ", scale_factor)
 
     desired_point_1 = line1(scale_factor[0])
     desired_point_2 = line2(scale_factor[1])
