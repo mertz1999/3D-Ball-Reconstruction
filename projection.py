@@ -118,13 +118,13 @@ def nearest_point(line1, line2):
 
 
 
-camera_8 = Projection()
-camera_8.projection_mat('./data/game_8.npy')
-line1 = camera_8.calc_line(np.array([1022,246, 1]))
+# camera_8 = Projection()
+# camera_8.projection_mat('./data/game_8.npy')
+# line1 = camera_8.calc_line(np.array([1022,246, 1]))
 
 
-camera_8_zoomed = Projection()
-camera_8_zoomed.projection_mat('./data/game_8_zoomed.npy')
-line2 = camera_8_zoomed.calc_line(np.array([975,25, 1]))
+# camera_8_zoomed = Projection()
+# camera_8_zoomed.projection_mat('./data/game_8_zoomed.npy')
+# line2 = camera_8_zoomed.calc_line(np.array([975,25, 1]))
 
-print(nearest_point(line1,line2))
+# print(nearest_point(line1,line2))
