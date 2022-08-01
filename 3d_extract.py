@@ -1,29 +1,27 @@
-from cmath import pi
 from utils.projection import Projection, nearest_point
-import numpy as np
-import matplotlib.pyplot as plt
-import cv2 
-import pandas as pd
 from utils.make_court import Court
+import matplotlib.pyplot as plt
+from cmath import pi
+import pandas as pd
+import numpy as np
+import argparse
+import json
+import cv2 
+
+# Loading json data
+parser = argparse.ArgumentParser()
+parser.add_argument('--config', type=str, help='Path to config file', required=True)
+args = parser.parse_args()
 
 
-output = './output/1_2_3_4.mp4'
+f = open(args.config)
+data_readed = json.load(f)
 
-data_path = ['./data/1_p1.npy', './data/2_p1.npy', './data/3_p1.npy', './data/4_p1.npy']
 
-video_path = [
-    './games/real/1_1_predicted_improved.mp4',
-    './games/real/2_1_predicted_improved.mp4',
-    './games/real/3_1_predicted_improved.mp4',
-    './games/real/4_1_predicted_improved.mp4'
-    ]
-
-csv_path = [
-    './games/real/1_1_predicted.csv',
-    './games/real/2_1_predicted.csv',
-    './games/real/3_1_predicted.csv',
-    './games/real/4_1_predicted.csv'
-]
+output     = data_readed['output']
+data_path  = data_readed['data_path']
+video_path = data_readed['video_path']
+csv_path   = data_readed['csv_path']
 
 
 # Load video, projection, csv for prodiction
@@ -88,27 +86,37 @@ for idx in range(2,min(total_frame)//2):
 
     if sum(total_detected) != 0.0:
         court_img = court_class.make_image(detected_point[0], detected_point[1])
-        court_img = court_class.make_line(lines[0],court_img)
-        court_img = court_class.make_line(lines[1],court_img)
-        court_img = court_class.make_line(lines[2],court_img)
-        court_img = court_class.make_line(lines[3],court_img)
+        for i in range(len(data_path)):
+            court_img = court_class.make_line(lines[i],court_img)
     else:
         detected_point = [0,0,-1.0]
     
 
     # make output image
     output_img = np.zeros((576,1024,3), dtype=np.uint8)
+    # Output for 4 camera
+    if len(data_path) == 4:
+        output_img[0:288,0:512,:] = frames[0]
+        output_img[0:288,512:,:]  = frames[1]
+        output_img[288:,0:512,:]  = frames[2]
+        output_img[288:,512:,:]   = frames[3]
+        output_img[-150:,394:630,:] = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (236,150))
 
+        output_img = cv2.putText(output_img, 'Height : {:.2f}'.format(detected_point[2]), (25,25), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
+        output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
+        output_img = cv2.putText(output_img, 'Y      : {:.2f}'.format(detected_point[1]), (25,75), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
+    # Output for 3 Camera
+    elif len(data_path) == 3:
+        output_img[0:288,0:512,:] = frames[0]
+        output_img[0:288,512:,:]  = frames[1]
+        output_img[288:,0:512,:]  = frames[2]
+        output_img[288:,512:,:]   = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (512,288))
+    # Output for 2 Camera
+    elif len(data_path) == 2:
+        output_img[0:288,0:512,:] = frames[0]
+        output_img[0:288,512:,:]  = frames[1]
+        output_img[288:,512:,:]   = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (512,288))
 
-    output_img[0:288,0:512,:] = frames[0]
-    output_img[0:288,512:,:]  = frames[1]
-    output_img[288:,0:512,:]  = frames[2]
-    output_img[288:,512:,:]   = frames[3]
-    output_img[-150:,394:630,:] = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (236,150))
-
-    output_img = cv2.putText(output_img, 'Height : {:.2f}'.format(detected_point[2]), (25,25), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
-    output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
-    output_img = cv2.putText(output_img, 'Y      : {:.2f}'.format(detected_point[1]), (25,75), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
 
     out_vid.write(output_img)
 
