@@ -1,4 +1,4 @@
-data/*
+# data/*
 3d_recons_venv/*
 __pycache__/*
 games/*
