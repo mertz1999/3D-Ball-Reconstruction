@@ -1,5 +1,5 @@
 from cmath import pi
-from projection import Projection, nearest_point
+from utils.projection import Projection, nearest_point
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2 
