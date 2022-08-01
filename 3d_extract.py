@@ -56,36 +56,38 @@ court_class = Court()
 for idx in range(args.shift,min(total_frame)//2):
     print(idx)
     court_img = court_class.court_image
+
     frames = []
     lines  = []
-    
     flag = False
     for i in range(len(data_path)):
-        # Read Each frame
+        # Read frame from cemras
         cap[i].set(cv2.CAP_PROP_POS_FRAMES, idx-args.shift)
         _, image = cap[i].read()
         frames.append(image)
 
-        # Save min distance point
+        # Make projected line based on cx,cy
         cx = int(csv_data[i]['X'][csv_data[i].Frame == idx].iloc[0])
         cy = int(csv_data[i]['Y'][csv_data[i].Frame == idx].iloc[0])
         if cx == 0.0 and cy == 0.0:
-            lines.append(-1)
+            lines.append(-1) # If visibility of ball being False line = -1
         else:
             lines.append(projection[i].calc_line(np.array([cx,cy, 1])))
 
-    # Find Point in 3D
-    total_detected = np.array([0.0,0.0,0.0])
-    len_points = 0
+    # Find Point in 3D (2-by-2)
+    total_detected = np.array([0.0,0.0,0.0]) # sum all detected point and save them in total_detected variable
+    len_points = 0                           # Number of points
     for i in range(len(data_path)-1):
         for j in range(i+1,len(data_path)):
             if lines[i] != -1 and lines[j] != -1:
                 len_points += 1
                 detected_point = nearest_point(lines[i],lines[j])
                 total_detected += detected_point
-  
+
+    # Mean of points
     detected_point = total_detected / len_points
 
+    # Draw line and ball point in 2D format on court image
     if sum(total_detected) != 0.0:
         court_img = court_class.make_image(detected_point[0], detected_point[1])
         for i in range(len(data_path)):
@@ -120,10 +122,10 @@ for idx in range(args.shift,min(total_frame)//2):
     output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
     output_img = cv2.putText(output_img, 'Y      : {:.2f}'.format(detected_point[1]), (25,75), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
 
-    # out_vid.write(output_img)
+    out_vid.write(output_img)
 
-    cv2.imshow('result', output_img)
-    if cv2.waitKey(25) & 0xFF == ord('q'):
-        break
+    # cv2.imshow('result', output_img)
+    # if cv2.waitKey(25) & 0xFF == ord('q'):
+    #     break
 
 out_vid.release()
