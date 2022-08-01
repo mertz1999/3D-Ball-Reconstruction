@@ -77,18 +77,26 @@ for idx in range(args.shift,min(total_frame)//2):
     # Find Point in 3D (2-by-2)
     total_detected = np.array([0.0,0.0,0.0]) # sum all detected point and save them in total_detected variable
     len_points = 0                           # Number of points
+    len_coeff = 0
+    points_list = []
     for i in range(len(data_path)-1):
         for j in range(i+1,len(data_path)):
             if lines[i] != -1 and lines[j] != -1:
                 len_points += 1
                 detected_point = nearest_point(lines[i],lines[j])
-                total_detected += detected_point
+                points_list.append(detected_point)
 
-    # Mean of points
-    detected_point = total_detected / len_points
+    # Best best point
+    if len_points >= 3:
+        for i in range(len_points-1):
+            dist = np.array([abs(sum((points_list[i]-point)**2))/3 for point in points_list[i+1:]])
+            number_of_near = sum(dist < 5)
+            for k in range(number_of_near*5): points_list.append(points_list[i])
+    
 
     # Draw line and ball point in 2D format on court image
-    if sum(total_detected) != 0.0:
+    if len(points_list) != 0:
+        detected_point = sum(points_list) / len(points_list)
         court_img = court_class.make_image(detected_point[0], detected_point[1])
         for i in range(len(data_path)):
             court_img = court_class.make_line(lines[i],court_img)
@@ -125,6 +133,7 @@ for idx in range(args.shift,min(total_frame)//2):
     out_vid.write(output_img)
 
     # cv2.imshow('result', output_img)
+    # cv2.waitKey(0)
     # if cv2.waitKey(25) & 0xFF == ord('q'):
     #     break
 
