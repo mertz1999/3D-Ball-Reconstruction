@@ -91,7 +91,7 @@ for idx in range(2,min(total_frame)//2):
         court_img = court_class.make_line(lines[0],court_img)
         court_img = court_class.make_line(lines[1],court_img)
         court_img = court_class.make_line(lines[2],court_img)
-        court_img = court_class.make_line(lines[2],court_img)
+        court_img = court_class.make_line(lines[3],court_img)
     else:
         detected_point = [0,0,-1.0]
     
