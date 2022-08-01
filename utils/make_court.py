@@ -17,16 +17,28 @@ class Court():
     # Make output image
     def make_image(self, cx,cy):
         point = self.M @ (np.array([cx,cy,1]).T)
-        print(point)
         court_copy = self.court_image.copy()
         court_copy = cv2.circle(court_copy, (int(point[0]),int(point[1])), 10, (0,0,0), -1)
 
         return court_copy
+    
+    def make_line(self, line1, line2):
+        court_copy = self.court_image.copy()
+        for line_ in [line1,line2]:
+            p0 = line_(0)
+            p1 = line_(50)
+
+            p0 = self.M @ (np.array([p0[0],p0[1],1]).T)
+            p1 = self.M @ (np.array([p1[0],p1[1],1]).T)
+            image = cv2.line(court_copy, (int(p0[0]),int(p0[1])), (int(p1[0]),int(p1[1])), (0,0,0), 5)
+
+        # plt.imshow(image);plt.show()
+        return image
 
 
 
 
 
 # X = Court()
-# plt.imshow(cv2.cvtColor(X.make_image(30,30), cv2.COLOR_BGR2RGB));plt.show()
+# plt.imshow(cv2.cvtColor(X.make_image(4.5,-3), cv2.COLOR_BGR2RGB));plt.show()
 
