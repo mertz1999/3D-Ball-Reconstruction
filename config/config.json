@@ -1,0 +1,32 @@
+{
+    "output" : "./output/1_2_3_4.mp4",
+
+    "data_path" : [
+        "./data/1_p1.npy",
+        "./data/2_p1.npy",
+        "./data/3_p1.npy",
+        "./data/4_p1.npy"
+    ],
+
+    "video_path" : [
+        "./games/real/1_1_predicted_improved.mp4",
+        "./games/real/2_1_predicted_improved.mp4",
+        "./games/real/3_1_predicted_improved.mp4",
+        "./games/real/4_1_predicted_improved.mp4"
+    ],
+
+    "csv_path" : [
+        "./games/real/1_1_predicted.csv",
+        "./games/real/2_1_predicted.csv",
+        "./games/real/3_1_predicted.csv",
+        "./games/real/4_1_predicted.csv"
+    ]
+
+}
+
+
+
+
+
+
+
