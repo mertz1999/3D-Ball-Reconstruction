@@ -8,16 +8,17 @@ import argparse
 import json
 import cv2 
 
-# Loading json data
+# Args parser
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, help='Path to config file', required=True)
+parser.add_argument('--shift', type=int, help='number of shifting', default=2)
 args = parser.parse_args()
 
-
+# Load Json file
 f = open(args.config)
 data_readed = json.load(f)
 
-
+# Save information from json file
 output     = data_readed['output']
 data_path  = data_readed['data_path']
 video_path = data_readed['video_path']
@@ -29,7 +30,6 @@ cap         = []
 total_frame = []
 projection  = []
 csv_data    = []
-
 for i in range(len(data_path)):
     # For Video
     cap_temp    = cv2.VideoCapture(video_path[i])
@@ -44,14 +44,16 @@ for i in range(len(data_path)):
     # CSV data from models
     csv_data.append(pd.read_csv(csv_path[i]))
 
+
 # Output Video
 fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')  
 out_vid = cv2.VideoWriter(output, fourcc, int(cap[0].get(cv2.CAP_PROP_FPS)), (1024, 576),True)
 
-
-# Read data
+# Court maker init
 court_class = Court()
-for idx in range(2,min(total_frame)//2):
+
+# Read data frame by frame
+for idx in range(args.shift,min(total_frame)//2):
     print(idx)
     court_img = court_class.court_image
     frames = []
@@ -60,7 +62,7 @@ for idx in range(2,min(total_frame)//2):
     flag = False
     for i in range(len(data_path)):
         # Read Each frame
-        cap[i].set(cv2.CAP_PROP_POS_FRAMES, idx-2)
+        cap[i].set(cv2.CAP_PROP_POS_FRAMES, idx-args.shift)
         _, image = cap[i].read()
         frames.append(image)
 
@@ -102,9 +104,6 @@ for idx in range(2,min(total_frame)//2):
         output_img[288:,512:,:]   = frames[3]
         output_img[-150:,394:630,:] = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (236,150))
 
-        output_img = cv2.putText(output_img, 'Height : {:.2f}'.format(detected_point[2]), (25,25), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
-        output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
-        output_img = cv2.putText(output_img, 'Y      : {:.2f}'.format(detected_point[1]), (25,75), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
     # Output for 3 Camera
     elif len(data_path) == 3:
         output_img[0:288,0:512,:] = frames[0]
@@ -117,11 +116,14 @@ for idx in range(2,min(total_frame)//2):
         output_img[0:288,512:,:]  = frames[1]
         output_img[288:,512:,:]   = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (512,288))
 
+    output_img = cv2.putText(output_img, 'Height : {:.2f}'.format(detected_point[2]), (25,25), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
+    output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
+    output_img = cv2.putText(output_img, 'Y      : {:.2f}'.format(detected_point[1]), (25,75), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
 
-    out_vid.write(output_img)
+    # out_vid.write(output_img)
 
-    # cv2.imshow('result', output_img)
-    # if cv2.waitKey(25) & 0xFF == ord('q'):
-    #     break
+    cv2.imshow('result', output_img)
+    if cv2.waitKey(25) & 0xFF == ord('q'):
+        break
 
 out_vid.release()
