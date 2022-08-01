@@ -55,7 +55,7 @@ class Projection():
     
     # Find Line of projection point
     def calc_line(self,test_point):
-        new_M = self.M 
+        new_M = self.M.copy()
         new_M[0,3] = new_M[0,3] - test_point[0]
         new_M[1,3] = new_M[1,3] - test_point[1]
         new_M[2,3] = new_M[2,3] - test_point[2]
@@ -117,8 +117,9 @@ def nearest_point(line1, line2):
 
 
 
-# camera_8 = Projection()
-# camera_8.projection_mat('./data/game_8.npy')
+camera_8 = Projection()
+camera_8.projection_mat('./data/4_p1.npy')
+print(camera_8.M)
 # line1 = camera_8.calc_line(np.array([1022,246, 1]))
 
 
@@ -127,3 +128,4 @@ def nearest_point(line1, line2):
 # line2 = camera_8_zoomed.calc_line(np.array([975,25, 1]))
 
 # print(nearest_point(line1,line2))
+
