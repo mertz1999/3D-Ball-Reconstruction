@@ -22,15 +22,18 @@ class Court():
 
         return court_copy
     
-    def make_line(self, line1, line2):
-        court_copy = self.court_image.copy()
-        for line_ in [line1,line2]:
-            p0 = line_(0)
-            p1 = line_(50)
+    def make_line(self, line1, image="None"):
+        if image == "None":
+            image = self.court_image.copy()
+        try:
+            p0 = line1(0)
+            p1 = line1(50)
 
             p0 = self.M @ (np.array([p0[0],p0[1],1]).T)
             p1 = self.M @ (np.array([p1[0],p1[1],1]).T)
-            image = cv2.line(court_copy, (int(p0[0]),int(p0[1])), (int(p1[0]),int(p1[1])), (0,0,0), 5)
+            image = cv2.line(image, (int(p0[0]),int(p0[1])), (int(p1[0]),int(p1[1])), (255,0,0), 1)
+        except:
+            pass
 
         # plt.imshow(image);plt.show()
         return image
