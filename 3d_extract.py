@@ -65,7 +65,7 @@ out_vid = cv2.VideoWriter(output, fourcc, int(cap[0].get(cv2.CAP_PROP_FPS)), (10
 court_class = Court()
 
 # Read data frame by frame
-for idx in range(2900,min(total_frame)//2):
+for idx in range(args.shift,min(total_frame)//2):
     print(idx)
     court_img = court_class.court_image.copy()
 
@@ -167,10 +167,10 @@ for idx in range(2900,min(total_frame)//2):
     output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
     output_img = cv2.putText(output_img, 'Y      : {:.2f}'.format(detected_point[1]), (25,75), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
 
-    # out_vid.write(output_img)
+    out_vid.write(output_img)
 
-    cv2.imshow('result', output_img)
-    cv2.waitKey(0)
+    # cv2.imshow('result', output_img)
+    # cv2.waitKey(0)
     # if cv2.waitKey(25) & 0xFF == ord('q'):
     #     break
 
