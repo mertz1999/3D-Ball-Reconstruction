@@ -1,0 +1,27 @@
+{
+    "output" : "./output/1.mp4",
+
+    "data_path" : [
+        "./data/1_p1.npy"
+    ],
+
+    "video_path" : [
+        "./games/real/1_1_predicted_improved.mp4"
+    ],
+
+    "csv_path" : [
+        "./games/real/1_1_predicted.csv"
+    ],
+
+    "players_path" : [
+        "./games/real/1_1_players.pkl"
+    ]
+
+}
+
+
+
+
+
+
+

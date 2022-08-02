@@ -14,6 +14,11 @@
     "csv_path" : [
         "./games/real/1_1_predicted.csv",
         "./games/real/2_1_predicted.csv"
+    ],
+
+    "players_path" : [
+        "./games/real/1_1_players.pkl",
+        ""
     ]
 
 }
