@@ -15,10 +15,16 @@ class Court():
         self.M = cv2.getAffineTransform(pts1, pts2)
 
     # Make output image
-    def make_image(self, cx,cy):
+    def make_image(self, cx,cy, image="None", status='ball'): # status: 'ball', 'player'
         point = self.M @ (np.array([cx,cy,1]).T)
-        court_copy = self.court_image.copy()
-        court_copy = cv2.circle(court_copy, (int(point[0]),int(point[1])), 10, (0,0,0), -1)
+        if image == "None":
+            court_copy = self.court_image.copy()
+        else:
+            court_copy = image
+        if status == 'ball':
+            court_copy = cv2.circle(court_copy, (int(point[0]),int(point[1])), 10, (0,0,0), -1)
+        elif status == 'player':
+            court_copy = cv2.circle(court_copy, (int(point[0]),int(point[1])), 10, (0,0,255), -1, cv2.LINE_AA)
 
         return court_copy
     

@@ -75,6 +75,27 @@ class Projection():
             2. Camera Canter = line(0)
         """
         return line
+    
+
+
+# Find location of a person with intersection point between court surface and desired line
+def person_loc(line):
+    min_s = 0.0
+    min_value = 5
+    count = 1
+    for s in np.linspace(0,20,200):
+        point = line(s)
+        if abs(point[2]) <= min_value:
+            min_value = point[2]
+            min_s = s
+            count = 1
+        else:
+            count += 1
+        
+        if count > 5:
+            break
+        
+    return line(min_s)
 
 
 # Nearest point between two line
@@ -117,9 +138,9 @@ def nearest_point(line1, line2):
 
 
 
-camera_8 = Projection()
-camera_8.projection_mat('./data/4_p1.npy')
-print(camera_8.M)
+# camera_8 = Projection()
+# camera_8.projection_mat('./data/4_p1.npy')
+# print(camera_8.M)
 # line1 = camera_8.calc_line(np.array([1022,246, 1]))
 
 

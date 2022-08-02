@@ -1,4 +1,4 @@
-from utils.projection import Projection, nearest_point
+from utils.projection import Projection, nearest_point, person_loc
 from utils.make_court import Court
 import matplotlib.pyplot as plt
 from cmath import pi
@@ -69,8 +69,10 @@ for idx in range(2900,min(total_frame)//2):
     print(idx)
     court_img = court_class.court_image.copy()
 
-    frames = []
-    lines  = []
+    # --- Saved informations
+    frames  = []
+    lines   = []
+    plr_loc = []
     flag = False
     for i in range(len(data_path)):
         # Read frame from cemras
@@ -79,9 +81,13 @@ for idx in range(2900,min(total_frame)//2):
 
         # Draw player location on frame
         if players_loc[i] != -1:
+            plr_loc.append(players_loc[i][idx])
             for loc in  players_loc[i][idx]:
                 cv2.line(image, (int(loc[0])-10,int(loc[1])), (int(loc[0])+10,int(loc[1])), (0,255,0), 1)
+        else:
+            plr_loc.append(-1)
         frames.append(image)
+
 
         # Make projected line based on cx,cy
         cx = int(csv_data[i]['X'][csv_data[i].Frame == idx].iloc[0])
@@ -91,7 +97,7 @@ for idx in range(2900,min(total_frame)//2):
         else:
             lines.append(projection[i].calc_line(np.array([cx,cy, 1])))
 
-    # Find Point in 3D (2-by-2)
+    # --- Find Point in 3D (2-by-2)
     total_detected = np.array([0.0,0.0,0.0]) # sum all detected point and save them in total_detected variable
     len_points = 0                           # Number of points
     len_coeff = 0
@@ -122,6 +128,14 @@ for idx in range(2900,min(total_frame)//2):
             court_img = court_class.make_line(lines[i],court_img)
     else:
         detected_point = [0,0,-1.0]
+
+    # Make person locations:
+    for idx, locs in enumerate(plr_loc):
+        if locs != -1:
+            for loc in locs:
+                p_xyz = person_loc(projection[idx].calc_line(np.array([loc[0], loc[1], 1])))
+                court_img = court_class.make_image(p_xyz[0], p_xyz[1], court_img, status='player')
+
     
 
     # make output image
