@@ -1,3 +1,4 @@
+from ast import arg
 from utils.projection import Projection, nearest_point, person_loc
 from utils.make_court import Court
 import matplotlib.pyplot as plt
@@ -13,6 +14,7 @@ import cv2
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, help='Path to config file', required=True)
 parser.add_argument('--shift', type=int, help='number of shifting', default=2)
+parser.add_argument('--show', action="store_true", help='Show output? ')
 args = parser.parse_args()
 
 # Load Json file
@@ -83,7 +85,7 @@ for idx in range(20,min(total_frame)//2):
         # Draw player location on frame
         if players_loc[i] != -1:
             plr_loc.append(players_loc[i][idx])   # Save This frame player data
-            for prev_idx in range(1,20):
+            for prev_idx in range(1,10):
                 if prev_idx == 1:
                     p_players[i] = {idx-1 : players_loc[i][idx-1]}
                 else:
@@ -193,11 +195,12 @@ for idx in range(20,min(total_frame)//2):
     output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
     output_img = cv2.putText(output_img, 'Y      : {:.2f}'.format(detected_point[1]), (25,75), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
 
-    out_vid.write(output_img)
 
-    # cv2.imshow('result', output_img)
-    # cv2.waitKey(0)
-    # if cv2.waitKey(25) & 0xFF == ord('q'):
-    #     break
-
+    if args.show:
+        cv2.imshow('result', output_img)
+        # cv2.waitKey(0)
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break
+    else:
+        out_vid.write(output_img)
 out_vid.release()
