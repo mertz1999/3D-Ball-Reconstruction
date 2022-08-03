@@ -1,5 +1,5 @@
 {
-    "output" : "./output/1.mp4",
+    "output" : "./output/1_player.mp4",
 
     "data_path" : [
         "./data/1_p1.npy"
@@ -14,7 +14,7 @@
     ],
 
     "players_path" : [
-        "./games/real/1_1_players.pkl",
+        "./games/real/1_1_players.pkl"
     ]
 
 }

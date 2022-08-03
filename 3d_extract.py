@@ -193,11 +193,11 @@ for idx in range(20,min(total_frame)//2):
     output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
     output_img = cv2.putText(output_img, 'Y      : {:.2f}'.format(detected_point[1]), (25,75), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
 
-    # out_vid.write(output_img)
+    out_vid.write(output_img)
 
-    cv2.imshow('result', output_img)
-    cv2.waitKey(0)
-    if cv2.waitKey(25) & 0xFF == ord('q'):
-        break
+    # cv2.imshow('result', output_img)
+    # cv2.waitKey(0)
+    # if cv2.waitKey(25) & 0xFF == ord('q'):
+    #     break
 
 out_vid.release()
