@@ -14,7 +14,7 @@
     ],
 
     "players_path" : [
-        "./games/real/1_1_players.pkl"
+        "./games/real/1_1_players.pkl",
     ]
 
 }
