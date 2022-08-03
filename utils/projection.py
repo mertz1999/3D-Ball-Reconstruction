@@ -83,7 +83,7 @@ def person_loc(line):
     min_s = 0.0
     min_value = 5
     count = 1
-    for s in np.linspace(0,20,200):
+    for s in np.linspace(0,20,1000):
         point = line(s)
         if abs(point[2]) <= min_value:
             min_value = point[2]
