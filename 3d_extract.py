@@ -56,7 +56,6 @@ for i in range(len(data_path)):
     else:
         players_loc.append(-1)
 
-
 # Output Video
 fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')  
 out_vid = cv2.VideoWriter(output, fourcc, int(cap[0].get(cv2.CAP_PROP_FPS)), (1024, 576),True)
@@ -65,14 +64,16 @@ out_vid = cv2.VideoWriter(output, fourcc, int(cap[0].get(cv2.CAP_PROP_FPS)), (10
 court_class = Court()
 
 # Read data frame by frame
-for idx in range(args.shift,min(total_frame)//2):
+for idx in range(20,min(total_frame)//2):
     print(idx)
     court_img = court_class.court_image.copy()
 
     # --- Saved informations
-    frames  = []
-    lines   = []
-    plr_loc = []
+    frames     = [] # Save frames of all videos
+    lines      = [] # Save projected line based on cx,cy ig
+    plr_loc    = [] # all players location of this frame index
+    p_players  = {} # prev. player location
+    pp_players = {} # double prev. player location
     flag = False
     for i in range(len(data_path)):
         # Read frame from cemras
@@ -81,11 +82,21 @@ for idx in range(args.shift,min(total_frame)//2):
 
         # Draw player location on frame
         if players_loc[i] != -1:
-            plr_loc.append(players_loc[i][idx])
+            plr_loc.append(players_loc[i][idx])   # Save This frame player data
+            for prev_idx in range(1,20):
+                if prev_idx == 1:
+                    p_players[i] = {idx-1 : players_loc[i][idx-1]}
+                else:
+                    p_players[i][idx-prev_idx] = players_loc[i][idx-prev_idx]
             for loc in  players_loc[i][idx]:
-                cv2.line(image, (int(loc[0])-10,int(loc[1])), (int(loc[0])+10,int(loc[1])), (0,255,0), 1)
+                if loc[5] == 0:
+                    # cv2.rectangle(image, (int(loc[0]),int(loc[1])), (int(loc[2]),int(loc[3])), (0,255,0), 1)
+                    mean_x = (loc[0] + loc[2])/2
+                    cv2.line(image, (int(mean_x)-10,int(loc[3])), (int(mean_x)+10,int(loc[3])), (0,255,0), 1)
+                    cv2.putText(image, '{}'.format(int(loc[4])), (int(mean_x),int(loc[3])+8), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,0,0), 1, cv2.LINE_AA)
+        
         else:
-            plr_loc.append(-1)
+            plr_loc.append([])
         frames.append(image)
 
 
@@ -130,11 +141,26 @@ for idx in range(args.shift,min(total_frame)//2):
         detected_point = [0,0,-1.0]
 
     # Make person locations:
-    for idx, locs in enumerate(plr_loc):
-        if locs != -1:
+    for i, locs in enumerate(plr_loc):
+        if locs != []:
             for loc in locs:
-                p_xyz = person_loc(projection[idx].calc_line(np.array([loc[0], loc[1], 1])))
-                court_img = court_class.make_image(p_xyz[0], p_xyz[1], court_img, status='player')
+                if loc[5] == 0:
+                    # Now point
+                    mean_x = (loc[0] + loc[2])/2
+                    xyz = person_loc(projection[i].calc_line(np.array([mean_x, loc[3], 1])))
+
+                    prev_find = 0
+                    p_data    = p_players[i]
+                    for p_index in p_data:
+                        list_ids  = [j[4] for j in p_data[p_index]]
+                        if loc[4] in list_ids:
+                            prev_find += 1
+                            sl_idx = list_ids.index(loc[4])
+                            mean_x = (p_data[p_index][sl_idx][0] + p_data[p_index][sl_idx][2])/2
+                            xyz    = xyz + person_loc(projection[i].calc_line(np.array([mean_x, p_data[p_index][sl_idx][3], 1]))) 
+
+                    xyz = xyz / (prev_find+1)                    
+                    court_img = court_class.make_image(xyz[0], xyz[1], court_img, status='player')
 
     
 
@@ -167,11 +193,11 @@ for idx in range(args.shift,min(total_frame)//2):
     output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
     output_img = cv2.putText(output_img, 'Y      : {:.2f}'.format(detected_point[1]), (25,75), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
 
-    out_vid.write(output_img)
+    # out_vid.write(output_img)
 
-    # cv2.imshow('result', output_img)
-    # cv2.waitKey(0)
-    # if cv2.waitKey(25) & 0xFF == ord('q'):
-    #     break
+    cv2.imshow('result', output_img)
+    cv2.waitKey(0)
+    if cv2.waitKey(25) & 0xFF == ord('q'):
+        break
 
 out_vid.release()
