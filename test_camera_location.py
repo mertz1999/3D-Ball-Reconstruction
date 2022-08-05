@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-data_path = ['./data/1_p1.npy', './data/2_p1.npy','./data/3_p1.npy', './data/4_p1.npy']
+data_path = ['./data/6_p1.npy']
 
 
 
