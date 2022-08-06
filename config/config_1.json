@@ -1,20 +1,20 @@
 {
-    "output" : "./output/1_player.mp4",
+    "output" : "./output/6_player.mp4",
 
     "data_path" : [
-        "./data/1_p1.npy"
+        "./data/6_p1.npy"
     ],
 
     "video_path" : [
-        "./games/real/1_1_predicted_improved.mp4"
+        "./games/real/6_1_predicted_improved.mp4"
     ],
 
     "csv_path" : [
-        "./games/real/1_1_predicted.csv"
+        "./games/real/6_1_predicted.csv"
     ],
 
     "players_path" : [
-        "./games/real/1_1_players.pkl"
+        "./games/real/6_1_players.pkl"
     ]
 
 }

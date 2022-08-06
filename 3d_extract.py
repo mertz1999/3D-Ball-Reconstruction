@@ -14,6 +14,8 @@ import cv2
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, help='Path to config file', required=True)
 parser.add_argument('--shift', type=int, help='number of shifting', default=2)
+parser.add_argument('--width', type=int, help='Width of each frmae', default=512)
+parser.add_argument('--height', type=int, help='Height of each frame', default=288)
 parser.add_argument('--show', action="store_true", help='Show output? ')
 args = parser.parse_args()
 
@@ -28,7 +30,8 @@ video_path   = data_readed['video_path']
 csv_path     = data_readed['csv_path']
 players_path = data_readed['players_path']
 
-
+WIDTH  = args.width
+HEIGHT = args.height
 
 
 # Load video, projection, csv for prodiction
@@ -60,13 +63,13 @@ for i in range(len(data_path)):
 
 # Output Video
 fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')  
-out_vid = cv2.VideoWriter(output, fourcc, int(cap[0].get(cv2.CAP_PROP_FPS)), (1024, 576),True)
+out_vid = cv2.VideoWriter(output, fourcc, int(cap[0].get(cv2.CAP_PROP_FPS)), (1024,576),True)
 
 # Court maker init
 court_class = Court()
 
 # Read data frame by frame
-for idx in range(20,min(total_frame)//2):
+for idx in range(20,min(total_frame)//1):
     print(idx)
     court_img = court_class.court_image.copy()
 
@@ -82,23 +85,27 @@ for idx in range(20,min(total_frame)//2):
         cap[i].set(cv2.CAP_PROP_POS_FRAMES, idx-args.shift)
         _, image = cap[i].read()
 
+        # cv2.imwrite('./test2.jpg', image);exit()
+
         # Draw player location on frame
         if players_loc[i] != -1:
             plr_loc.append(players_loc[i][idx])   # Save This frame player data
-            for prev_idx in range(1,10):
+            for prev_idx in range(1,5):
                 if prev_idx == 1:
                     p_players[i] = {idx-1 : players_loc[i][idx-1]}
                 else:
                     p_players[i][idx-prev_idx] = players_loc[i][idx-prev_idx]
+                    
             for loc in  players_loc[i][idx]:
                 if loc[5] == 0:
-                    # cv2.rectangle(image, (int(loc[0]),int(loc[1])), (int(loc[2]),int(loc[3])), (0,255,0), 1)
-                    mean_x = (loc[0] + loc[2])/2
-                    cv2.line(image, (int(mean_x)-10,int(loc[3])), (int(mean_x)+10,int(loc[3])), (0,255,0), 1)
-                    cv2.putText(image, '{}'.format(int(loc[4])), (int(mean_x),int(loc[3])+8), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,0,0), 1, cv2.LINE_AA)
+                    cv2.rectangle(image, (int(loc[0]),int(loc[1])), (int(loc[2]),int(loc[3])), (0,255,0), 1)
+                    cv2.putText(image, '{}'.format(int(loc[4])), (int(loc[0])+5,int(loc[1])+5), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,0,0), 1, cv2.LINE_AA)
         
         else:
             plr_loc.append([])
+
+        if len(data_path) != 1:
+            image = cv2.resize(image, (512, 288))
         frames.append(image)
 
 
@@ -146,28 +153,29 @@ for idx in range(20,min(total_frame)//2):
     for i, locs in enumerate(plr_loc):
         if locs != []:
             for loc in locs:
-                if loc[5] == 0:
+                if loc[5] == 0.0:
                     # Now point
                     mean_x = (loc[0] + loc[2])/2
                     xyz = person_loc(projection[i].calc_line(np.array([mean_x, loc[3], 1])))
 
                     prev_find = 0
-                    p_data    = p_players[i]
-                    for p_index in p_data:
-                        list_ids  = [j[4] for j in p_data[p_index]]
-                        if loc[4] in list_ids:
-                            prev_find += 1
-                            sl_idx = list_ids.index(loc[4])
-                            mean_x = (p_data[p_index][sl_idx][0] + p_data[p_index][sl_idx][2])/2
-                            xyz    = xyz + person_loc(projection[i].calc_line(np.array([mean_x, p_data[p_index][sl_idx][3], 1]))) 
+                    if len(p_players) != 0:
+                        p_data    = p_players[i]
+                        for p_index in p_data:
+                            list_ids  = [j[4] for j in p_data[p_index]]
+                            if loc[4] in list_ids:
+                                prev_find += 1
+                                sl_idx = list_ids.index(loc[4])
+                                mean_x = (p_data[p_index][sl_idx][0] + p_data[p_index][sl_idx][2])/2
+                                xyz    = xyz + person_loc(projection[i].calc_line(np.array([mean_x, p_data[p_index][sl_idx][3], 1]))) 
 
-                    xyz = xyz / (prev_find+1)                    
+                    xyz = xyz / (prev_find+1)    
                     court_img = court_class.make_image(xyz[0], xyz[1], court_img, status='player')
 
     
 
     # make output image
-    output_img = np.zeros((576,1024,3), dtype=np.uint8)
+    output_img = np.zeros((576, 1024), dtype=np.uint8)
     # Output for 4 camera
     if len(data_path) >= 4:
         output_img[0:288,0:512,:] = frames[0]
@@ -188,7 +196,7 @@ for idx in range(20,min(total_frame)//2):
         output_img[0:288,512:,:]  = frames[1]
         output_img[288:,512:,:]   = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (512,288))
     elif len(data_path) == 1:
-        output_img = cv2.resize(frames[0], (1024,576))
+        output_img = cv2.resize(frames[0], (1024, 576))
         output_img[-150:,394:630,:] = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (236,150))
 
     output_img = cv2.putText(output_img, 'Height : {:.2f}'.format(detected_point[2]), (25,25), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
@@ -198,9 +206,10 @@ for idx in range(20,min(total_frame)//2):
 
     if args.show:
         cv2.imshow('result', output_img)
-        # cv2.waitKey(0)
-        if cv2.waitKey(25) & 0xFF == ord('q'):
-            break
+        cv2.waitKey(0)
+        # if cv2.waitKey(25) & 0xFF == ord('q'):
+        #     break
     else:
         out_vid.write(output_img)
+
 out_vid.release()

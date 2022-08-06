@@ -79,11 +79,12 @@ class Projection():
 
 
 # Find location of a person with intersection point between court surface and desired line
-def person_loc(line):
+def person_loc(line, start=0, stop=20):
     min_s = 0.0
-    min_value = 5
+    min_value = 100
     count = 1
-    for s in np.linspace(0,20,500):
+    step = 0.01
+    for s in np.linspace(start, stop, int((stop-start)/step)):
         point = line(s)
         if abs(point[2]) <= min_value:
             min_value = point[2]
@@ -94,7 +95,7 @@ def person_loc(line):
         
         if count > 5:
             break
-        
+
     return line(min_s)
 
 

@@ -55,18 +55,18 @@ import numpy as np
 # data = np.array(data)
 # np.save('./data/'+name+'.npy', data)
 
-name = '3_p1'
-scale = 2.66
-data = [
-    [0,-9,2.24     ,1214/scale,144/scale],
-    [9,-9,2.24     ,627/scale,177/scale],
-    [0,-9,2.24+0.8 ,1219/scale,77/scale],
-    [9,-9,2.24+0.8 ,626/scale,133/scale],
-    [0,-18,0       ,931/scale,456/scale],
-    [9,-18,0       ,119/scale,376/scale]
-]
-data = np.array(data)
-np.save('./data/'+name+'.npy', data)
+# name = '3_p1'
+# scale = 2.66
+# data = [
+#     [0,-9,2.24     ,1214/scale,144/scale],
+#     [9,-9,2.24     ,627/scale,177/scale],
+#     [0,-9,2.24+0.8 ,1219/scale,77/scale],
+#     [9,-9,2.24+0.8 ,626/scale,133/scale],
+#     [0,-18,0       ,931/scale,456/scale],
+#     [9,-18,0       ,119/scale,376/scale]
+# ]
+# data = np.array(data)
+# np.save('./data/'+name+'.npy', data)
 
 
 # name = '4_p1'
@@ -86,9 +86,34 @@ np.save('./data/'+name+'.npy', data)
 
 
 
+# name = '5_p1'
+# scale1 = 2.66/2
+# scale2 = 2.66/1.95
+# data = [
+#     [0,-9,2.24,188/scale1, 301/scale2],
+#     [9,-9,2.24,757/scale1,320/scale2],
+#     [0,-6,0   ,242/scale1,520/scale2],
+#     [9,-6,0   ,875/scale1,481/scale2],
+#     [0,0,0    ,496/scale1,635/scale2],
+#     [9,0,0    ,1267/scale1,544/scale2]
+# ]
+# data = np.array(data)
+# np.save('./data/'+name+'.npy', data)
 
 
 
+
+name = '6_p1'
+data = [
+    [0,-6,0, 155, 480],
+    [0,-12,0, 227, 333],
+    [9,-12,0, 1076, 331],
+    [9,-6,0, 1139, 479],
+    [0,-9,2.43, 183, 155],
+    [9,-9,2.43, 1111, 153],
+]
+data = np.array(data)
+np.save('./data/'+name+'.npy', data)
 
 
 
