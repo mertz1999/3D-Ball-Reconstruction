@@ -30,8 +30,13 @@ you can see ***make_data.py*** file for usage this code.
 
 3D important point is like this:
 
-<!-- ![App Screenshot](./inc/3d_court.jpg) -->
 
 <p align="center">
 <img src="./inc/3d_court.jpg" style="width:60%;"/>
+</p>
+
+and each point in above image has X,Y,Z value based on below image:
+
+<p align="center">
+<img src="./inc/Dimensions.jpg" style="width:60%;"/>
 </p>
