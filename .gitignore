@@ -3,5 +3,4 @@
 __pycache__/*
 games/*
 utils/__pycache__/*
-/inc/*
 /output/*
