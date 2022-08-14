@@ -15,9 +15,9 @@ class Court():
         self.M = cv2.getAffineTransform(pts1, pts2)
 
     # Make output image
-    def make_image(self, cx,cy, image="None", status='ball'): # status: 'ball', 'player'
+    def make_image(self, cx,cy, image=np.array([]), status='ball'): # status: 'ball', 'player'
         point = self.M @ (np.array([cx,cy,1]).T)
-        if image == "None":
+        if len(image) == 0:
             court_copy = self.court_image.copy()
         else:
             court_copy = image
@@ -28,8 +28,8 @@ class Court():
 
         return court_copy
     
-    def make_line(self, line1, image="None"):
-        if image == "None":
+    def make_line(self, line1, image=np.array([])):
+        if len(image) == 0:
             image = self.court_image.copy()
         try:
             p0 = line1(0)

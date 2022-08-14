@@ -1,12 +1,20 @@
-from ast import arg
+"""
+This file is used to extract 3D point of ball and players by multiple
+cameras (At least 2 camera).
+Input of this file is a .json file that contain .mp4, .csv, .npy, .pkl.
+
+for using this file only assign .json path to --config option.
+
+
+"""
+
+
+# Import all packages
+from utils.utils import data_extract, draw_rect_id, repeat_min_dist, output_img_creator
 from utils.projection import Projection, nearest_point, person_loc
 from utils.make_court import Court
-import matplotlib.pyplot as plt
-from cmath import pi
-import pandas as pd
 import numpy as np
 import argparse
-import pickle
 import json
 import cv2 
 
@@ -14,9 +22,9 @@ import cv2
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, help='Path to config file', required=True)
 parser.add_argument('--shift', type=int, help='number of shifting', default=2)
-parser.add_argument('--width', type=int, help='Width of each frmae', default=512)
-parser.add_argument('--height', type=int, help='Height of each frame', default=288)
 parser.add_argument('--show', action="store_true", help='Show output? ')
+parser.add_argument('--start', type=int, help='Start frame index', default=20)
+parser.add_argument('--stop', type=int, help='stop frame index', default=-1)
 args = parser.parse_args()
 
 # Load Json file
@@ -30,50 +38,41 @@ video_path   = data_readed['video_path']
 csv_path     = data_readed['csv_path']
 players_path = data_readed['players_path']
 
-WIDTH  = args.width
-HEIGHT = args.height
+
+WIDTH        = 512
+HEIGHT       = 288
+START        = args.start
+STOP         = args.stop
 
 
-# Load video, projection, csv for prodiction
-cap         = []
-total_frame = []
-projection  = []
-csv_data    = []
-players_loc = []
-for i in range(len(data_path)):
-    # For Video
-    cap_temp    = cv2.VideoCapture(video_path[i])
-    cap.append(cap_temp)
-    total_frame.append(int(cap_temp.get(cv2.CAP_PROP_FRAME_COUNT)))
+# Read Data for each of camera (.mp4, .npy, .csv, .pkl) and save them as list
+cap, total_frame, projection, csv_data, players_loc = data_extract(data_path, video_path, csv_path, players_path)
 
-    # Projection
-    proj_temp = Projection()
-    proj_temp.projection_mat(data_path[i])
-    projection.append(proj_temp)
-
-    # CSV data from models
-    csv_data.append(pd.read_csv(csv_path[i]))
-
-    # Player
-    if players_path[i] != "":
-        with open(players_path[i], 'rb') as file:
-            players_loc.append(pickle.load(file))
-    else:
-        players_loc.append(-1)
-
-# Output Video
-fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')  
+# make ready to write output video
+fourcc  = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')  
 out_vid = cv2.VideoWriter(output, fourcc, int(cap[0].get(cv2.CAP_PROP_FPS)), (1024,576),True)
 
-# Court maker init
+# Court maker init (Use this for make a court image with player, line and ball location drawing)
 court_class = Court()
 
 # Read data frame by frame
-for idx in range(20,min(total_frame)//1):
-    print(idx)
+last = min(total_frame) if STOP > min(total_frame) or STOP==-1 else STOP
+for idx in range(START,last):
+    print("frame: ",idx)
+
+    # Get empty cout image for write on it
     court_img = court_class.court_image.copy()
 
-    # --- Saved informations
+    # --- Saving informations
+    """
+        Part 1: Saving informations
+        
+        This part is used to save some detailed information like
+            1. frames for each camera
+            2. Save player data that belong to this camera frame
+            3. Save prev. player location to p_players variable
+            4. Save all line that belong to ball in each frame
+    """
     frames     = [] # Save frames of all videos
     lines      = [] # Save projected line based on cx,cy ig
     plr_loc    = [] # all players location of this frame index
@@ -85,29 +84,29 @@ for idx in range(20,min(total_frame)//1):
         cap[i].set(cv2.CAP_PROP_POS_FRAMES, idx-args.shift)
         _, image = cap[i].read()
 
-        # cv2.imwrite('./test2.jpg', image);exit()
-
-        # Draw player location on frame
+        # Draw and save player location 
         if players_loc[i] != -1:
+            # Save player data for each frame camera
             plr_loc.append(players_loc[i][idx])   # Save This frame player data
+
+            # Save 5 or more prev. player data to make moving average in future
             for prev_idx in range(1,5):
                 if prev_idx == 1:
                     p_players[i] = {idx-1 : players_loc[i][idx-1]}
                 else:
                     p_players[i][idx-prev_idx] = players_loc[i][idx-prev_idx]
-                    
-            for loc in  players_loc[i][idx]:
-                if loc[5] == 0:
-                    cv2.rectangle(image, (int(loc[0]),int(loc[1])), (int(loc[2]),int(loc[3])), (0,255,0), 1)
-                    cv2.putText(image, '{}'.format(int(loc[4])), (int(loc[0])+5,int(loc[1])+5), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,0,0), 1, cv2.LINE_AA)
-        
+            
+            # Draw rectangle on playera
+            image = draw_rect_id(image, players_loc[i][idx])
         else:
             plr_loc.append([])
 
+        # Change image size if we have multiple camera
         if len(data_path) != 1:
             image = cv2.resize(image, (512, 288))
-        frames.append(image)
 
+        # Save frames
+        frames.append(image)
 
         # Make projected line based on cx,cy
         cx = int(csv_data[i]['X'][csv_data[i].Frame == idx].iloc[0])
@@ -117,57 +116,68 @@ for idx in range(20,min(total_frame)//1):
         else:
             lines.append(projection[i].calc_line(np.array([cx,cy, 1])))
 
-    # --- Find Point in 3D (2-by-2)
+    # --- Find Point in 3D (1-by-1)
+    """
+        Part 2: Find point in 3D (1-by-1)
+        
+        This part is used to find 3D point based on 1-by-1 cameras and draw on court
+            1. Find nearst point with each 1-1 camera pairs for ex. 1-2 1-3 1-4 2-2 2-4 3-4
+            2. With repeat_min_dist function repeat a value that hase lower distance to other values in a list (points in 3D)
+            3. Draw line and ball location (if it finded)
+    """
     total_detected = np.array([0.0,0.0,0.0]) # sum all detected point and save them in total_detected variable
-    len_points = 0                           # Number of points
-    len_coeff = 0
     points_list = []
     for i in range(len(data_path)-1):
         for j in range(i+1,len(data_path)):
             if lines[i] != -1 and lines[j] != -1:
-                len_points += 1
-                detected_point = nearest_point(lines[i],lines[j])
-                points_list.append(detected_point)
-
-    # Best best point
-    if len_points >= 3:
-        for i in range(len_points-1):
-            dist = np.array([abs(sum((points_list[i]-point)**2))/3 for point in points_list[i+1:]])
-            number_of_near = sum(dist < 5)
-            for k in range(number_of_near*5): points_list.append(points_list[i])
+                points_list.append(nearest_point(lines[i],lines[j]))
+            
+    # Assign more value to a point that has less distance to other points 
+    if len(points_list) >= 3:
+        points_list = repeat_min_dist(points_list, number_of_repeat = 5)
     
 
     # Draw line and ball point in 2D format on court image
     if len(points_list) != 0 or len(data_path) == 1:
+        # If we have only one cemra
         if len(data_path) != 1:
             detected_point = sum(points_list) / len(points_list)
-            court_img = court_class.make_image(detected_point[0], detected_point[1])
+            court_img      = court_class.make_image(detected_point[0], detected_point[1])
         else:
             detected_point = [0,0,-1.0]
+        
+        # Draw line by 
         for i in range(len(data_path)):
             court_img = court_class.make_line(lines[i],court_img)
     else:
         detected_point = [0,0,-1.0]
 
-    # Make person locations:
+    # --- Make person locations:
+    """
+        Part 3: Make person location with Moving-Average
+        
+        This part is used to make an aveage of player positions with a specific id in prev. frames
+     
+    """
     for i, locs in enumerate(plr_loc):
         if locs != []:
             for loc in locs:
                 if loc[5] == 0.0:
-                    # Now point
+                    # find line and then xyz position of bottom of player
                     mean_x = (loc[0] + loc[2])/2
-                    xyz = person_loc(projection[i].calc_line(np.array([mean_x, loc[3], 1])))
+                    xyz = person_loc(projection[i].calc_line(np.array([mean_x, loc[3], 1])), stop=200)
 
+                    # Check if ID of this player is in prev frames data
                     prev_find = 0
                     if len(p_players) != 0:
                         p_data    = p_players[i]
                         for p_index in p_data:
-                            list_ids  = [j[4] for j in p_data[p_index]]
-                            if loc[4] in list_ids:
-                                prev_find += 1
-                                sl_idx = list_ids.index(loc[4])
+                            list_ids  = [j[4] for j in p_data[p_index]] # List of ids
+                            if loc[4] in list_ids:                      # Check if player id exist on one of the prev. frame data
+                                prev_find += 1                          # find number of matched players
+                                sl_idx = list_ids.index(loc[4])       
                                 mean_x = (p_data[p_index][sl_idx][0] + p_data[p_index][sl_idx][2])/2
-                                xyz    = xyz + person_loc(projection[i].calc_line(np.array([mean_x, p_data[p_index][sl_idx][3], 1]))) 
+                                xyz    = xyz + person_loc(projection[i].calc_line(np.array([mean_x, p_data[p_index][sl_idx][3], 1])), stop=200) 
 
                     xyz = xyz / (prev_find+1)    
                     court_img = court_class.make_image(xyz[0], xyz[1], court_img, status='player')
@@ -175,29 +185,11 @@ for idx in range(20,min(total_frame)//1):
     
 
     # make output image
-    output_img = np.zeros((576, 1024), dtype=np.uint8)
-    # Output for 4 camera
-    if len(data_path) >= 4:
-        output_img[0:288,0:512,:] = frames[0]
-        output_img[0:288,512:,:]  = frames[1]
-        output_img[288:,0:512,:]  = frames[2]
-        output_img[288:,512:,:]   = frames[3]
-        output_img[-150:,394:630,:] = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (236,150))
-
-    # Output for 3 Camera
-    elif len(data_path) == 3:
-        output_img[0:288,0:512,:] = frames[0]
-        output_img[0:288,512:,:]  = frames[1]
-        output_img[288:,0:512,:]  = frames[2]
-        output_img[288:,512:,:]   = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (512,288))
-    # Output for 2 Camera
-    elif len(data_path) == 2:
-        output_img[0:288,0:512,:] = frames[0]
-        output_img[0:288,512:,:]  = frames[1]
-        output_img[288:,512:,:]   = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (512,288))
-    elif len(data_path) == 1:
-        output_img = cv2.resize(frames[0], (1024, 576))
-        output_img[-150:,394:630,:] = cv2.resize(cv2.rotate(court_img,cv2.ROTATE_90_CLOCKWISE), (236,150))
+    """
+        Part 4: Make output image
+             
+    """
+    output_img = output_img_creator(frames, court_img)
 
     output_img = cv2.putText(output_img, 'Height : {:.2f}'.format(detected_point[2]), (25,25), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
     output_img = cv2.putText(output_img, 'X      : {:.2f}'.format(detected_point[0]), (25,50), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 1, cv2.LINE_AA)
@@ -206,9 +198,9 @@ for idx in range(20,min(total_frame)//1):
 
     if args.show:
         cv2.imshow('result', output_img)
-        cv2.waitKey(0)
-        # if cv2.waitKey(25) & 0xFF == ord('q'):
-        #     break
+        # cv2.waitKey(0)
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            break
     else:
         out_vid.write(output_img)
 

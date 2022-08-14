@@ -50,7 +50,6 @@ class Projection():
         eigenvalues, eigenvectors = np.linalg.eig(M_)
         camera_center             = eigenvectors[:,np.argmin(eigenvalues)]
         self.camera_center        = camera_center[0:3] / camera_center[-1]
-        print("Center of Camera : ", self.camera_center)
 
     
     # Find Line of projection point
