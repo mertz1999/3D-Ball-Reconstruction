@@ -30,4 +30,8 @@ you can see ***make_data.py*** file for usage this code.
 
 3D important point is like this:
 
-![App Screenshot](./inc/3d_court.jpg)
+<!-- ![App Screenshot](./inc/3d_court.jpg) -->
+
+<p align="center">
+<img src="./inc/3d_court.jpg" style="width:60%;"/>
+</p>
