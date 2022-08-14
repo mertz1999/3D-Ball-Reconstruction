@@ -75,6 +75,33 @@ class Projection():
             2. Camera Canter = line(0)
         """
         return line
+
+    
+    # Find Line of projection point in XY format with Z=0
+    def calc_line_xy(self,test_point):
+        new_M = self.M.copy()
+        new_M[0,3] = new_M[0,3] - test_point[0]
+        new_M[1,3] = new_M[1,3] - test_point[1]
+        new_M[2,3] = new_M[2,3] - test_point[2]
+
+        M_ = new_M.T @ new_M 
+        eigenvalues, eigenvectors = np.linalg.eig(M_)
+        sample_loc = eigenvectors[:,np.argmin(eigenvalues)]
+        sample_loc = sample_loc[0:3] / sample_loc[-1]
+        # print("sample_loc       : ", sample_loc)
+
+        # Line function based on Scale input variable
+        camera_center_copy = self.camera_center.copy()
+        camera_center_copy[2] = 1
+        sample_loc[2]         = 1
+        line = lambda scale: self.camera_center + scale*(sample_loc-self.camera_center)
+
+        """
+        Some tips:
+            1. DR = line(1)-line(0)
+            2. Camera Canter = line(0)
+        """
+        return line
     
 
 
