@@ -120,3 +120,9 @@ for example this is a config file with 4 camera information.(.npy, .mp4, .csv, .
 We add some config file in ***./config*** directory, check it out!
 
 **player_path** is not required to use. it only used if you have data from player detection and tracking system.
+
+And now you can run ***3d_extract.py*** to make result.
+```shell
+python 3d_extract.py --config './config.json' 
+```
+if you want to see frame by frame during process use **--show** switch.
