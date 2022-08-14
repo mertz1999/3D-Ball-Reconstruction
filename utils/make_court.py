@@ -5,13 +5,15 @@ import matplotlib.pyplot as plt
 # Court Class to return ball or player on court image
 class Court():
     """
-        Use this class to return a court image with circle points on it.
+        Use this class to return a court image with circle points on it or drawing lines
     """
     def __init__(self, court_path='./inc/court.jpg'):
         self.court_image = cv2.imread(court_path)
+        # some point in 3D vollyball court and 2D vollyball court (./inc/cout.jpg)
         pts1 = np.float32([[0, 0],[0, -18],[9, -18]])
         pts2 = np.float32([[64, 577],[64, 50],[344, 50]])
 
+        # Find transformation between pts1 and pts2
         self.M = cv2.getAffineTransform(pts1, pts2)
 
     # Make output image
@@ -41,13 +43,5 @@ class Court():
         except:
             pass
 
-        # plt.imshow(image);plt.show()
         return image
-
-
-
-
-
-# X = Court()
-# plt.imshow(cv2.cvtColor(X.make_image(4.5,-3), cv2.COLOR_BGR2RGB));plt.show()
 
