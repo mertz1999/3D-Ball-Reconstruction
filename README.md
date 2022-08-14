@@ -1,8 +1,15 @@
 # 3D Ball Reconstruction
 In this repository we use outputs of TrackNet models for making 3D trajectory. 
 
+Requirements file:
+- .csv file of ball location (required)
+- .pkl file of player location with id (not required)
+- video files
+- .npy file of pairs points
+
 Tabel of contents:
 - Make Pairs of 3D point and 2D point
+- Test Cameras
 
 
 ## Make Pairs
@@ -41,6 +48,8 @@ and each point in above image has X,Y,Z value based on below image:
 <img src="./inc/Dimensions.jpg" style="width:60%;"/>
 </p>
 
+So 3D point has made like this: 
+
 | Point ID | X | Y | Z |
 | :---: |    :----:   | :---: | :---: |
 | 1   | 0 | 0 | 0 |
@@ -57,3 +66,14 @@ and each point in above image has X,Y,Z value based on below image:
 | 12  |0|-9|2.43, 2.24|
 | 13  |9|-9|2.43, 2.24|
 | 14  |9|-9| - |
+
+
+## Test Camera location
+After make .npy file for each of your camera you can use ***test_camera_location.py*** for see where exactly camera is located.
+
+```shell
+python test_camera_location.py
+```
+
+In ***test_camera_location.py*** use ***data_path*** variable to define path of all camera`s npy file.
+
