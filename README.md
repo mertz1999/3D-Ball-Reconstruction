@@ -10,6 +10,7 @@ Requirements file:
 Tabel of contents:
 - Make Pairs of 3D point and 2D point
 - Test Cameras
+- Extrac 3D Point
 
 
 ## Make Pairs
@@ -77,3 +78,45 @@ python test_camera_location.py
 
 In ***test_camera_location.py*** use ***data_path*** variable to define path of all camera`s npy file.
 
+## 3D Reconstruct
+This part is to make 3D data from multiple camera (2,3,4) and first you need to make a ***.json*** file to pass inputs to ***3d_extract.py*** app.
+
+for example this is a config file with 4 camera information.(.npy, .mp4, .csv, .pkl).
+
+```json
+{
+    "output" : "./output/1_2_3_4.mp4",
+
+    "data_path" : [
+        "./data/1_p1.npy",
+        "./data/2_p1.npy",
+        "./data/3_p1.npy",
+        "./data/4_p1.npy"
+    ],
+
+    "video_path" : [
+        "./games/real/1_1_predicted_improved.mp4",
+        "./games/real/2_1_predicted_improved.mp4",
+        "./games/real/3_1_predicted_improved.mp4",
+        "./games/real/4_1_predicted_improved.mp4"
+    ],
+
+    "csv_path" : [
+        "./games/real/1_1_predicted.csv",
+        "./games/real/2_1_predicted.csv",
+        "./games/real/3_1_predicted.csv",
+        "./games/real/4_1_predicted.csv"
+    ],
+
+    "players_path" : [
+        "./games/real/1_1_players.pkl",
+        "",
+        "",
+        ""
+    ]
+
+}
+```
+We add some config file in ***./config*** directory, check it out!
+
+**player_path** is not required to use. it only used if you have data from player detection and tracking system.
