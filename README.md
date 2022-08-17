@@ -13,6 +13,12 @@ Tabel of contents:
 - Extrac 3D Point
 
 
+More Information:
+- [Triangulation](https://www.youtube.com/watch?v=UZlRhEUWSas)
+- [Camera Calibration](https://towardsdatascience.com/camera-calibration-with-example-in-python-5147e945cdeb)
+- [Why Min Eigen value](https://towardsdatascience.com/find-the-minimum-stretching-direction-of-positive-definite-matrices-79c2a3b397fc)
+
+
 ## Make Pairs
 First step to using this repository you need to make at least 6 pairs of 3D/2D point that belongs to your video cameras.
 
