@@ -17,6 +17,7 @@ More Information:
 - [Triangulation](https://www.youtube.com/watch?v=UZlRhEUWSas)
 - [Camera Calibration](https://towardsdatascience.com/camera-calibration-with-example-in-python-5147e945cdeb)
 - [Why Min Eigen value](https://towardsdatascience.com/find-the-minimum-stretching-direction-of-positive-definite-matrices-79c2a3b397fc)
+- [3D Geometry Mathematics](./inc/math.pdf)
 
 
 ## Make Pairs
